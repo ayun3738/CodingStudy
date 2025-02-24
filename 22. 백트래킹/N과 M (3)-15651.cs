@@ -1,4 +1,4 @@
-﻿class Tmp{
+﻿class NM3{
     private static StreamReader sr = new StreamReader(new BufferedStream(Console.OpenStandardInput()));
     private static StreamWriter sw = new StreamWriter(new BufferedStream(Console.OpenStandardOutput()));
     
@@ -12,12 +12,12 @@
             }
             else
             {
-                Permutation(i, e,k - 1, result + i + " ");
+                Permutation(1, e,k - 1, result + i + " ");
             }
         }
     }
 
-    public static void Main(string[] args)
+    public static void nm3(string[] args)
     {
         
         string? NM = sr.ReadLine();
