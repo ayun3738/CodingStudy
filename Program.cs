@@ -1,33 +1,99 @@
 ﻿class Tmp{
     private static StreamReader sr = new StreamReader(new BufferedStream(Console.OpenStandardInput()));
     private static StreamWriter sw = new StreamWriter(new BufferedStream(Console.OpenStandardOutput()));
-    
-    private static void Permutation(int s, int e, int k, string result)
+    private static int cnt = 0;
+    private static int[,] direction = { { 0, 1 }, { 0, -1 }, { 1, 0 }, { -1, 0 }, { 1, 1 }, { 1, -1 }, { -1, 1 }, { -1, -1 } };
+    private static void fill_board(int[,] board, int y, int x)
     {
-        for (int i = s; i < e + 1; i++)
+        int N = board.GetLength(0);
+        board[y, x] += 1;
+        for (int i = 0; i < direction.GetLength(0); i++)
         {
-            if (k == 1)
+            int dx = direction[i, 0];
+            int dy = direction[i, 1];
+            int tmpx = x + dx;
+            int tmpy = y + dy;
+            while (tmpx >= 0 && tmpx < N && tmpy >= 0 && tmpy < N)
             {
-                sw.WriteLine(result + i);
+                board[tmpy, tmpx] += 1;
+                tmpx += dx;
+                tmpy += dy;
             }
-            else
+        }
+    }
+
+    private static void repair_board(int[,] board, int y, int x)
+    {
+        int N = board.GetLength(0);
+        board[y, x] -= 1;
+        for (int i = 0; i < direction.GetLength(0); i++)
+        {
+            int dx = direction[i, 0];
+            int dy = direction[i, 1];
+            int tmpx = x + dx;
+            int tmpy = y + dy;
+            while (tmpx >= 0 && tmpx < N && tmpy >= 0 && tmpy < N)
             {
-                Permutation(i, e,k - 1, result + i + " ");
+                board[tmpy, tmpx] -= 1;
+                tmpx += dx;
+                tmpy += dy;
             }
+        }
+    }
+
+    private static void put_queen(int[,] board, int y, int x, int depth)
+    {
+        int N = board.GetLength(0);
+        // sw.WriteLine(depth);
+
+        if (depth == N && board.Cast<int>().Count(x => x == 1) == N)
+        {
+            cnt += 1;
+            return;
+        }
+        for (int i = y; i < N; i++)
+        {
+            for (int j = x; j < N; j++)
+            {
+                if (board[i, j] == 0)
+                {
+                    // sw.WriteLine("i: " + i + " j: " + j);
+                    fill_board(board, i, j);
+                    // for (int a = 0; a < N; a++)
+                    // {
+                    //     for (int b = 0; b < N; b++)
+                    //     {
+                    //         sw.Write(board[a, b]);
+                    //     }
+                    //     sw.WriteLine();
+                    // }
+                    put_queen(board, i, j, depth + 1);
+                    repair_board(board, i, j);
+                }
+            }
+            x = 0;
         }
     }
 
     public static void Main(string[] args)
     {
-        
-        string? NM = sr.ReadLine();
-        if (NM == null)
+        string? N = sr.ReadLine();
+        if (N == null)
         {
             return;
         }
-        List<int> NMList = NM.Split(' ').Select(x => int.Parse(x)).ToList();
-        Permutation(1, NMList[0], NMList[1], "");
-        
+        int Nint = int.Parse(N);
+        int[,] board = new int[Nint, Nint];
+        for (int i = 0; i < Nint; i++)
+        {
+            for (int j = 0; j < Nint; j++)
+            {
+                board[i, j] = 0;
+            }
+        }
+        put_queen(board, 0, 0, 0);
+        sw.WriteLine(cnt);
+
         sr.Close();
         sw.Close();
 
