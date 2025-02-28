@@ -1,98 +1,113 @@
-﻿class Tmp{
+﻿using System.Collections;
+using System.ComponentModel;
+using System.Globalization;
+
+class Tmp{
     private static StreamReader sr = new StreamReader(new BufferedStream(Console.OpenStandardInput()));
     private static StreamWriter sw = new StreamWriter(new BufferedStream(Console.OpenStandardOutput()));
-    private static int cnt = 0;
-    private static int[,] direction = { { 0, 1 }, { 0, -1 }, { 1, 0 }, { -1, 0 }, { 1, 1 }, { 1, -1 }, { -1, 1 }, { -1, -1 } };
-    private static void fill_board(int[,] board, int y, int x)
+    private static Dictionary<string, HashSet<int>> tasks = new Dictionary<string, HashSet<int>>();
+    
+    private static void fill_board(int[,] board, string task )
     {
-        int N = board.GetLength(0);
-        board[y, x] += 1;
-        for (int i = 0; i < direction.GetLength(0); i++)
+        int number = int.Parse(task.Substring(1));
+        int target_number = tasks[task].First();
+        switch(task[0])
         {
-            int dx = direction[i, 0];
-            int dy = direction[i, 1];
-            int tmpx = x + dx;
-            int tmpy = y + dy;
-            while (tmpx >= 0 && tmpx < N && tmpy >= 0 && tmpy < N)
-            {
-                board[tmpy, tmpx] += 1;
-                tmpx += dx;
-                tmpy += dy;
-            }
-        }
-    }
-
-    private static void repair_board(int[,] board, int y, int x)
-    {
-        int N = board.GetLength(0);
-        board[y, x] -= 1;
-        for (int i = 0; i < direction.GetLength(0); i++)
-        {
-            int dx = direction[i, 0];
-            int dy = direction[i, 1];
-            int tmpx = x + dx;
-            int tmpy = y + dy;
-            while (tmpx >= 0 && tmpx < N && tmpy >= 0 && tmpy < N)
-            {
-                board[tmpy, tmpx] -= 1;
-                tmpx += dx;
-                tmpy += dy;
-            }
-        }
-    }
-
-    private static void put_queen(int[,] board, int y, int x, int depth)
-    {
-        int N = board.GetLength(0);
-        // sw.WriteLine(depth);
-
-        if (depth == N && board.Cast<int>().Count(x => x == 1) == N)
-        {
-            cnt += 1;
-            return;
-        }
-        for (int i = y; i < N; i++)
-        {
-            for (int j = x; j < N; j++)
-            {
-                if (board[i, j] == 0)
+            case 'r':
+                for (int i = 0; i < 9; i++)
                 {
-                    // sw.WriteLine("i: " + i + " j: " + j);
-                    fill_board(board, i, j);
-                    // for (int a = 0; a < N; a++)
-                    // {
-                    //     for (int b = 0; b < N; b++)
-                    //     {
-                    //         sw.Write(board[a, b]);
-                    //     }
-                    //     sw.WriteLine();
-                    // }
-                    put_queen(board, i, j, depth + 1);
-                    repair_board(board, i, j);
+                    if (board[number, i] == 0)
+                    {
+                        board[number, i] = target_number;
+                    }
                 }
+                break;
+            case 'c':
+                for (int i = 0; i < 9; i++)
+                {
+                    if (board[i, number] == 0)
+                    {
+                        board[i, number] = target_number;
+                    }
+                }
+                break;
+            default:
+                for (int i = 0; i < 9; i++)
+                {
+                    int real_row = number / 3 * 3 + i / 3;
+                    int real_col = number % 3 * 3 + i % 3;
+                    if (board[real_row, real_col] == 0)
+                    {
+                        board[real_row, real_col] = target_number;
+                    }
+                }
+                break;
+        }
+
+        tasks[task].Remove(target_number);
+        if (tasks[task].Count == 1)
+        {
+            fill_board(board, task);
+        }
+        else if (tasks[task].Count == 0)
+        {
+            foreach (string key in tasks.Keys)
+            {
+                Console.WriteLine(key);
             }
-            x = 0;
+            tasks.Remove(task);
         }
     }
+
 
     public static void Main(string[] args)
     {
-        string? N = sr.ReadLine();
-        if (N == null)
+        for (int i = 0; i < 9; i++)
         {
-            return;
+            tasks.Add('r' + i.ToString(), new HashSet<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9 });
+            tasks.Add('c' + i.ToString(), new HashSet<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9 });
+            tasks.Add('b' + i.ToString(), new HashSet<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9 });
         }
-        int Nint = int.Parse(N);
-        int[,] board = new int[Nint, Nint];
-        for (int i = 0; i < Nint; i++)
+        int[,] board = new int[9, 9];
+        for (int i = 0; i < 9; i++)
         {
-            for (int j = 0; j < Nint; j++)
+            string? tmp = sr.ReadLine();
+            if (tmp == null)
             {
-                board[i, j] = 0;
+                return;
+            }
+            string[] tmps = tmp.Split(' ');
+            for (int j = 0; j < 9; j++)
+            {
+                board[i, j] = int.Parse(tmps[j]);
             }
         }
-        put_queen(board, 0, 0, 0);
-        sw.WriteLine(cnt);
+        int previous_len = tasks.Count;
+        while(previous_len > 0)
+        {
+            int current_len = tasks.Count;
+            if (current_len == previous_len)
+            {
+                fill_board(board, tasks.Keys.First());
+            }
+            foreach(string task in tasks.Keys)
+            {
+                if (tasks[task].Count == 1)
+                {
+                    fill_board(board, task);
+                }
+            }
+            previous_len = current_len;
+        }
+
+        for (int i = 0; i < 9; i++)
+        {
+            for (int j = 0; j < 9; j++)
+            {
+                sw.Write(board[i, j] + " ");
+            }
+            sw.WriteLine();
+        }
 
         sr.Close();
         sw.Close();
