@@ -7,43 +7,47 @@ class Tmp{
     private static StreamWriter sw = new StreamWriter(new BufferedStream(Console.OpenStandardOutput()));
     private static Dictionary<string, HashSet<int>> tasks = new Dictionary<string, HashSet<int>>();
     
+    private static void remove_candidate(string set_type, int target_number)
+    {
+        if (tasks.ContainsKey(set_type))
+        {
+            tasks[set_type].Remove(target_number);
+        }
+    }
+
     private static void fill_board(int[,] board, string task )
     {
         int number = int.Parse(task.Substring(1));
         int target_number = tasks[task].First();
-        switch(task[0])
-        {
-            case 'r':
-                for (int i = 0; i < 9; i++)
+        // sw.WriteLine(task + " " + target_number);
+            int real_row;
+            int real_col;
+            for (int i = 0; i < 9; i++){
+                switch(task[0])
                 {
-                    if (board[number, i] == 0)
-                    {
-                        board[number, i] = target_number;
-                    }
-                }
-                break;
-            case 'c':
-                for (int i = 0; i < 9; i++)
+                    case 'r':
+                        real_row = number;
+                        real_col = i;
+                        break;
+                    case 'c':
+                        real_row = i;
+                        real_col = number;
+                        break;
+                    default:
+                        real_row = number / 3 * 3 + i / 3;
+                        real_col = number % 3 * 3 + i % 3;
+                        break;
+                }    
+                if (board[real_row, real_col] == 0)
                 {
-                    if (board[i, number] == 0)
-                    {
-                        board[i, number] = target_number;
-                    }
-                }
-                break;
-            default:
-                for (int i = 0; i < 9; i++)
-                {
-                    int real_row = number / 3 * 3 + i / 3;
-                    int real_col = number % 3 * 3 + i % 3;
-                    if (board[real_row, real_col] == 0)
-                    {
-                        board[real_row, real_col] = target_number;
-                    }
-                }
-                break;
-        }
+                    board[real_row, real_col] = target_number;
+                    string row = 'r' + real_row.ToString();
+                    string col = 'c' + real_col.ToString();
+                    string box = 'b' + (real_row / 3 * 3 + real_col / 3).ToString();
 
+                }
+            }
+        sw.WriteLine(task + " " + target_number);
         tasks[task].Remove(target_number);
         if (tasks[task].Count == 1)
         {
@@ -53,7 +57,7 @@ class Tmp{
         {
             foreach (string key in tasks.Keys)
             {
-                Console.WriteLine(key);
+                // Console.WriteLine(key);
             }
             tasks.Remove(task);
         }
@@ -81,8 +85,19 @@ class Tmp{
             {
                 board[i, j] = int.Parse(tmps[j]);
             }
+
+            for (int j = 0; j < 9; j++)
+            {
+                if (board[i, j] != 0)
+                {
+                    tasks['r' + i.ToString()].Remove(board[i, j]);
+                    tasks['c' + j.ToString()].Remove(board[i, j]);
+                    tasks['b' + (i / 3 * 3 + j / 3).ToString()].Remove(board[i, j]);
+                }
+            }
         }
-        int previous_len = tasks.Count;
+        int previous_len = 1;
+        sw.WriteLine();
         while(previous_len > 0)
         {
             int current_len = tasks.Count;
@@ -92,6 +107,7 @@ class Tmp{
             }
             foreach(string task in tasks.Keys)
             {
+                // sw.WriteLine(task + " " + tasks[task].Count);
                 if (tasks[task].Count == 1)
                 {
                     fill_board(board, task);
