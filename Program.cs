@@ -2,15 +2,11 @@
     private static StreamReader sr = new StreamReader(new BufferedStream(Console.OpenStandardInput()));
     private static StreamWriter sw = new StreamWriter(new BufferedStream(Console.OpenStandardOutput()));
     private static Dictionary<string, HashSet<int>> tasks = new Dictionary<string, HashSet<int>>();
+    private static int zero_count = 0;
     
     private static void remove_candidate(string set_type, int[,] board, int target_number)
     {
         tasks[set_type].Remove(target_number);
-        if (tasks[set_type].Count == 0)
-        {
-            tasks.Remove(set_type);
-            return;
-        }
         if (tasks[set_type].Count == 1)
         {
             fill_board(board, set_type);
@@ -42,21 +38,13 @@
             if (board[real_row, real_col] == 0)
             {
                 board[real_row, real_col] = target_number;
+                zero_count--;
                 string row = 'r' + real_row.ToString();
                 string col = 'c' + real_col.ToString();
                 string box = 'b' + (real_row / 3 * 3 + real_col / 3).ToString();
-                if (tasks.ContainsKey(row))
-                {
-                    remove_candidate(row, board, target_number);
-                }
-                if (tasks.ContainsKey(col))
-                {
-                    remove_candidate(col, board, target_number);
-                }
-                if (tasks.ContainsKey(box))
-                {
-                    remove_candidate(box, board, target_number);
-                }
+                remove_candidate(row, board, target_number);
+                remove_candidate(col, board, target_number);
+                remove_candidate(box, board, target_number);
                 return ;
             }
         }
@@ -93,13 +81,17 @@
                     tasks['c' + j.ToString()].Remove(board[i, j]);
                     tasks['b' + (i / 3 * 3 + j / 3).ToString()].Remove(board[i, j]);
                 }
+                else
+                {
+                    zero_count++;
+                }
             }
         }
         
-        
-        while(previous_len > 0)
+        while(zero_count > 0)
         {
             List<string> target_tasks = new List<string>();
+            string tmp = "";
             foreach (string task in tasks.Keys)
             {
                 if (tasks[task].Count == 1)
@@ -109,18 +101,14 @@
             }
             foreach(string task in target_tasks)
             {
-                if (tasks.ContainsKey(task))
+                if (tasks[task].Count == 1)
                 {
-                    if (tasks[task].Count == 1)
-                    {
-                        fill_board(board, task);
-                    }
+                    fill_board(board, task);
                 }
             }
-            int current_len = tasks.Count;
-            if (current_len == previous_len & current_len > 0)
+            if (target_tasks.Count == 0)
             {
-                fill_board(board, tasks.Keys.First());
+                fill_board(board, target_tasks[0]);
             }
             previous_len = current_len;
         }
