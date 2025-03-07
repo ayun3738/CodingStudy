@@ -1,4 +1,4 @@
-﻿class Tmp{
+﻿class HappyFunction{
     private static StreamReader sr = new StreamReader(new BufferedStream(Console.OpenStandardInput()));
     private static StreamWriter sw = new StreamWriter(new BufferedStream(Console.OpenStandardOutput()));
     private static Dictionary<Tuple<int, int, int>, int> w_map = new Dictionary<Tuple<int, int, int>, int>();
@@ -26,7 +26,7 @@
         return w_map[tmp];
     }
 
-    public static void Main(string[] args)
+    public static void happyFunction(string[] args)
     {
         calculate(20, 20, 20);
         while(true)
