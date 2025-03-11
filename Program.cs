@@ -1,49 +1,67 @@
 ﻿class Tmp{
     private static StreamReader sr = new StreamReader(new BufferedStream(Console.OpenStandardInput()));
     private static StreamWriter sw = new StreamWriter(new BufferedStream(Console.OpenStandardOutput()));
-    private static Dictionary<Tuple<int, int, int>, int> w_map = new Dictionary<Tuple<int, int, int>, int>();
-    private static int calculate(int a, int b, int c)
+
+    private static long padovan(int N, List<long> list_padovan)
     {
-        Tuple<int, int, int> tmp = new Tuple<int, int, int> (a, b, c);
-        if (a <= 0 || b <= 0 || c <= 0)
+        int cnt = list_padovan.Count;
+        while(cnt <= N)
         {
-            return 1;
+            long tmp = list_padovan[cnt - 1] + list_padovan[cnt - 5];
+            list_padovan.Add(tmp);
+            cnt++;
         }
-        if (a > 20 || b > 20 || c > 20)
-        {
-            return calculate(20, 20, 20);
-        }
-        if (w_map.ContainsKey(tmp))
-        {
-            return w_map[tmp];
-        }
-        if (a < b && b < c)
-        {
-            w_map[tmp] = calculate(a, b, c - 1) + calculate(a, b - 1, c - 1) - calculate(a, b - 1, c);
-            return w_map[tmp];
-        }
-        w_map[tmp] = calculate(a - 1, b, c) + calculate(a - 1, b - 1, c) + calculate(a - 1, b, c - 1) - calculate(a - 1, b - 1, c - 1);
-        return w_map[tmp];
+        
+        return list_padovan[N];
     }
 
     public static void Main(string[] args)
     {
-        calculate(20, 20, 20);
-        while(true)
+        string? N = sr.ReadLine();
+        if (N == null)
         {
-            string? abc = sr.ReadLine();
-            if (abc == null)
-            {
-                break;
-            }
-            List<int> abc_list = abc.Split(' ').Select(x => int.Parse(x)).ToList();
-            if (abc_list[0] == -1 && abc_list[1] == -1 && abc_list[2] == -1)
-            {
-                break;
-            }
-            int target = calculate(abc_list[0], abc_list[1], abc_list[2]);
-            sw.WriteLine("w(" + abc_list[0] + ", " + abc_list[1] + ", " + abc_list[2] + ") = " + target);
+            return;
         }
+
+        string? numbers = sr.ReadLine();
+        if (numbers == null)
+        {
+            return;
+        }
+        
+        List<long> sum_list = new List<long> ();
+        bool positive = false;
+        long sum_value = 0;
+        long result = -1001;
+        foreach (string number in numbers.Split(' '))
+        {
+            long tmp = long.Parse(number);
+            if (tmp < 0 && positive)
+            {
+                sum_list.Add(sum_value);
+                result = Math.Max(result, sum_value);
+                sum_value = 0;
+                positive = false;
+            }
+            else if (tmp >= 0 && !positive)
+            {
+                sum_list.Add(sum_value);
+                sum_value = 0;
+                positive = true;
+            }
+            sum_value += tmp;
+            result = Math.Max(result, tmp);
+        }
+        sum_list.Add(sum_value);
+        for (int s = 0; s < sum_list.Count; s++)
+        {
+            for (int e = s + 1; e < sum_list.Count; e++)
+            {
+                result = Math.Max(result, sum_list[s..e].Sum());
+            }
+        }
+
+        sw.WriteLine(result);
 
         sr.Close();
         sw.Close();
