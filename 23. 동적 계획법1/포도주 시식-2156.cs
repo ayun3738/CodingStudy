@@ -1,4 +1,4 @@
-﻿class Tmp{
+﻿class DrinkWine{
     private static StreamReader sr = new StreamReader(new BufferedStream(Console.OpenStandardInput()));
     private static StreamWriter sw = new StreamWriter(new BufferedStream(Console.OpenStandardOutput()));
 
@@ -15,7 +15,7 @@
         return max;
     }
 
-    public static void Main(string[] args)
+    public static void drinkWine(string[] args)
     {
         string? N = sr.ReadLine();
         if (N == null)
